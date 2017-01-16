@@ -121,7 +121,7 @@ while ($line = pg_fetch_array($result1, null, PGSQL_ASSOC)) {
     $count0 += 1;
 }
 
-
+// AWESOME NEW LINES BELOW --------------------------------------------------------------------------
 $years2 = array();
 foreach($price_date as $pd){if(!array_key_exists($pd[1], $years2)){ if ($pd[0]<1200000){$years2[$pd[1]] = array($pd[0]);}} else{ if ($pd[0]<1200000){ array_push($years2[$pd[1]], $pd[0]);}}}//fucking awesome line! 3 days.
 foreach($years2 as $key => $y){if(count($y)< 2){unset($years2[$key]);}}
@@ -137,7 +137,7 @@ echo "</tr>";
 echo "<tr>";
 foreach($years2 as $key => $y2){$average = 0; foreach($y2 as $prices){ $average += $prices;} echo "<td>£".round($average/count($y2))."</td>";}
 echo "</tr></table>";} else{echo "Not enough data for timeline average.";}
-
+// AWESOME NEW LINES ABOVE --------------------------------------------------------------------------
 
 
 //print_r($years2);
