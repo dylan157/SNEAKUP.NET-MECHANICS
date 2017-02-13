@@ -1,8 +1,15 @@
 <html lang="en" dir="ltr">
 <head>
 <title>SneakUp.Net</title>
+<meta name="viewport" content="width=1751, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="" />
+<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false);
+                function hideURLbar(){ window.scrollTo(0,1); } </script>
 <meta charset="iso-8859-1">
-<link rel="stylesheet" href="styles/layout.css" type="text/css">
+<script src="js/jquery.min.js"></script>
+<link rel="stylesheet" href="css/morris.css">
+<link rel="stylesheet" href="styles/layout2.css" type="text/css">
 <!--[if lt IE 9]><script src="scripts/html5shiv.js"></script><![endif]-->
 </head>
 <body>
@@ -17,11 +24,12 @@
         <li><a href="index.php">Home</a></li>
         <li><a href="http://www.github.comp<dylan157">Github</a></li>
         <li><a href="shoutouts.html">Shoutouts</a></li>
-        <li class="last"><a href="#">About</a></li>
+        <li class="last"><a href="about.html">About</a></li>
       </ul>
     </nav>
   </header>
 </div>
+
 <div class="wrapper row1">
   <div id="container" class="clear">
     <!-- Slider -->
@@ -32,10 +40,14 @@ echo '<link rel="stylesheet" type="text/css" href="stylesheet.css"></head>';
 $po = $_POST["in_post"];
 $es = $_POST["in_estate"];
 $dt = $_POST["in_date"];
+if ((strlen($po)==6)&&(!preg_match('/\s/',$po))){$po = substr($po, 0, 3)." ".substr($po, 3, 3);echo $po;}
+
+if ((strlen($po)==7)&&(!preg_match('/\s/',$po))){$po = substr($po, 0, 4)." ".substr($po, 4, 3);echo $po;}
+
 $p_c = explode(' ', $po);
 
 echo "          <h2>Search the UK House Price Index</a></h2>";
-echo "           <p>Our databases are kept up to date with the Uk House Price Index</a></p>";
+echo "           <p>postcode: EG 'mk4 3' will find all properties that start with 'mk4 3'. Enter full postcode for more specific/faster search results.</a></p>";
 echo "                 <form action='search.php' method='post'>";
 echo "                 Postcode: &nbsp <input name='in_post' value = '".$po."'>";
 echo "                 &nbsp or Estate: &nbsp <input name='in_estate' value = '".$es."'>";
@@ -100,7 +112,7 @@ $gopo = "= '".strtoupper($es)."'";
 if (strlen($dt)>0 ){$query = "SELECT price_paid, transfer_date, postcode, property_type, old_new, duration, paon, saon, street, estate, city_town, district, county FROM add_property where estate " . $gopo . "and transfer_date > '".$dt."-01-01' and price_paid <> '0' order by transfer_date desc limit 2000";
 }else{$query = "SELECT price_paid, transfer_date, postcode, property_type, old_new, duration, paon, saon, street, estate, city_town, district, county FROM add_property where estate " . $gopo . " and price_paid <> '0' order by transfer_date desc limit 2000";}}
 
-$dbconn = pg_connect()
+$dbconn = pg_connect("")
     or die('Could not connect: ' . pg_last_error());
 
 // Performing SQL query
@@ -121,27 +133,51 @@ while ($line = pg_fetch_array($result1, null, PGSQL_ASSOC)) {
     $count0 += 1;
 }
 
-// AWESOME NEW LINES BELOW --------------------------------------------------------------------------
+
 $years2 = array();
-foreach($price_date as $pd){if(!array_key_exists($pd[1], $years2)){ if ($pd[0]<1200000){$years2[$pd[1]] = array($pd[0]);}} else{ if ($pd[0]<1200000){ array_push($years2[$pd[1]], $pd[0]);}}}//fucking awesome line! 3 days.
+foreach($price_date as $pd){if(!array_key_exists($pd[1], $years2)){ if ($pd[0]>1){$years2[$pd[1]] = array($pd[0]);}} else{ if ($pd[0]>1){ array_push($years2[$pd[1]], $pd[0]);}}}//fucking awesome line! 3 days.
 foreach($years2 as $key => $y){if(count($y)< 2){unset($years2[$key]);}}
 
 if(count($years2)>1){
 
-echo "<table align='center' cellpadding='0' cellspacing='0' class='db-table'>\n";
-echo "<tr> <th>Average House Price By Year</th> </tr></table>";
 
-echo "<table align='center' cellpadding='0' cellspacing='0' class='db-table'>\n";echo "<tr>";
-foreach($years2 as $key => $y3){echo "<th>".$key."</th>"; }
-echo "</tr>";  
-echo "<tr>";
-foreach($years2 as $key => $y2){$average = 0; foreach($y2 as $prices){ $average += $prices;} echo "<td>£".round($average/count($y2))."</td>";}
-echo "</tr></table>";} else{echo "Not enough data for timeline average.";}
-// AWESOME NEW LINES ABOVE --------------------------------------------------------------------------
+echo"        <div class='main'>";
+echo"                 <div class='w3_agile_main_grids'>";
+echo"                         <div class='clear'> </div>";
+echo"                         <div class='wthree_bars_bottom'>";
+echo"                                 <div class='agileinfo_bars_bottom_right'>";
+echo"                                        <div class='w3l_area_chart agileits_w3layouts_text'>";
+echo"                                                <h1>Average area house price.</h1>";
+echo" 						     <h4>Blue(y): Year Average House price. Gray(z): Total Properties sold</h4>";
+echo"                                                 <div id='graph'></div>";
+echo"                                         </div>";
+echo"                                 </div>";
+echo"                                 <div class='clear'> </div>";
+echo"                 </div>";
+echo"                 <script type='text/javascript' src='js/raphael-min.js'></script>";
+echo"                 </script>";
+echo"                 <script src='js/morris.js'></script>";
+echo"                 <script>";
+echo"                         Morris.Area({";
+echo"                           element: 'graph',";
+echo"                           data: [";
 
 
-//print_r($years2);
-//print_r($price_date);
+foreach($years2 as $key => $y2){$average = 0; foreach($y2 as $prices){ $average += $prices;} echo "{x: '".$key."', y:".round($average/count($y2)).", z:".(count($y2))."},\n";}
+
+
+echo"                           ],";
+echo"                           xkey: 'x',";
+echo"                           ykeys: ['y', 'z'],";
+echo"                           labels: ['Y', 'Z']";
+echo"                         }).on('click', function(i, row){";
+echo"                           console.log(i, row);";
+echo"                         });";
+echo"                 </script>";
+echo"         <!-- //area -->";
+echo"         </div>";
+}else{echo "Not enough variable data for timeline average. Try searching for a specific postcode or removing the last character to search larger area. EG: mk13 2az => mk13 2a (Queries are limited to 2000 results. If all 2000 results are from 2016, a timeline cannot be made.)";}
+
 
 pg_result_seek( $result1, 0 );
 $total = 0;
