@@ -1,0 +1,12 @@
+CREATE OR REPLACE FUNCTION public.add_new_property(aj character varying, b text, c text, d text, e text, f text, g text, h text, i text, j text, k text, l text, m text, n text, o text, p text)
+ RETURNS void
+ LANGUAGE plpgsql
+AS $function$ 
+DECLARE 
+BEGIN 
+    UPDATE add_property SET  (price_paid, transfer_date, postcode, property_type, old_new, duration, paon, saon, street, estate, city_town, district, county, ppd, add_change) = ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) WHERE primarykey = $1; 
+    IF NOT FOUND THEN 
+    insert into public.add_property(primarykey, price_paid, transfer_date, postcode, property_type, old_new, duration, paon, saon, street, estate, city_town, district, county, ppd, add_change) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16); 
+    END IF; 
+END; 
+$function$
